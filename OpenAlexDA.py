@@ -127,26 +127,6 @@ cat_var= ["publication_year",'primary_location_source_type',"type",
           "primary_topic_subfield_display_name", "primary_topic_display_name", 
           "sustainable_development_goals_display_name",]
 
-"""def impute_categorical(data, cat_var):
-    for col in cat_var:
-        data[col] = data[col].astype('category')
-        missing_percentage = data[col].isnull().mean()
-        if 0.1 <= missing_percentage < 0.4:
-            # Créez une nouvelle modalité "Non spécifié" pour les valeurs manquantes
-            data[col].cat.add_categories("Non spécifié", inplace=True)
-            data[col].fillna("Non spécifié", inplace=True)
-        elif missing_percentage < 0.1:
-            # Remplacez les valeurs manquantes par le mode
-            mode_value = data[col].mode()[0]
-            data[col].fillna(mode_value, inplace=True)
-    
-    print(f"Colonnes catégorielles imputées : {', '.join(cat_var)}")
-    return data
-
-# Utilisation :
-data = impute_categorical(data, cat_var)
-data2 = impute_categorical(data2, cat_var)"""
-
 def impute_categorical(data, cat_var):
     for col in cat_var:
         data[col] = data[col].astype('category')
@@ -166,8 +146,6 @@ def impute_categorical(data, cat_var):
 # Utilisation :
 data = impute_categorical(data, cat_var)
 data2 = impute_categorical(data2, cat_var)
-
-
 
 # Création de la variable 'number_of_pages'
 def create_number_of_pages_column(df):
@@ -309,53 +287,6 @@ def plot_publications_by_category(dfs, cat_var):
                 if var == "Auteur":  # Vérifier si la variable est "Auteur"
                     df[var] = df[var].apply(lambda x: x if len(x) <= 20 else ' '.join(x.split()[:5]) + " et alia")  # Écourter avec "et alia" après le dernier mot si plus de 20 caractères
     
-
-"""
-def plot_publications_by_category(dfs, cat_var):
-    for var in cat_var:
-        fig, axs = plt.subplots(len(dfs), 1, figsize=(11, 5.5*len(dfs)))  # Elargir le cadre des graphiques
-        fig.suptitle(f'Pourcentage de publications par {var}', fontsize=16, weight='bold')
-        
-        for i, (df_name, df) in enumerate(dfs.items()):
-            ax = axs[i]  # Utiliser un objet ax pour plus de clarté
-            institution_name = df["Nom de l'établissement"].unique()[0]
-            
-            if var == "Année":
-                order = sorted(df[var].unique())
-                title = f'{institution_name}'
-                ax = sns.countplot(data=df, x=var, order=order, ax=ax)
-                plt.xticks(rotation=90)
-                max_value = max(df[var].value_counts())
-                ax.set_ylim(0, max_value + 0.1 * max_value)
-                
-                for p in ax.patches:
-                    ax.annotate(format(p.get_height(), '.0f'), (p.get_x() + p.get_width() / 2., p.get_height()),
-                                ha='center', va='center', xytext=(0, 10), textcoords='offset points')
-                ax.set(xlabel=None, ylabel=None)  # Enlever le label de l'axe x et y
-            else:
-                 order = df[var].value_counts().index[:10]
-                 title = f'Top 10 de {institution_name} '  if len(order) == 10 else f'{institution_name}' 
-                 ax = sns.countplot(data=df, y=var, order=order, ax=ax)
-                 plt.yticks(rotation=0)
-                 max_value = max(df[var].value_counts())
-                 ax.set_xlim(0, max_value + 0.1 * max_value)
-                 
-                 for p in ax.patches:
-                     width = p.get_width()
-                     ax.annotate(f'{width / len(df) * 100:.1f}%', (width, p.get_y() + p.get_height() / 2.),
-                                 ha='center', va='center', xytext=(20, 0), textcoords='offset points')
-                 ax.set(xlabel=None, ylabel=None)  # Enlever le label de l'axe x et y
-            ax.set_title(title)
-         
-        plt.tight_layout()
-        plt.show()
-
-# Utilisation :
-dataframes = {"data1": data, "data2": data2}
-cat_var = cat_var
-plot_publications_by_category(dataframes, cat_var)"""
-
-
 # VARIABLES NUMERIQUES
 
 num_var= ["Citations", "Références effectuées",
@@ -481,101 +412,6 @@ def plot_citations_vs_num_var(data_list, num_var):
 # Utilisation
 plot_citations_vs_num_var([data, data2], num_var)
 
-# Test de correlation Kendall variables catégorielles
-"""
-def kendall_matrix_subplot(data, cat_var):
-    n_dataframes = len(data)
-    n_rows = 1
-    n_cols = n_dataframes
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(10 * n_dataframes, 8))
-    fig.subplots_adjust(wspace=0.5)
-
-    for i, df in enumerate(data):
-        institution_name = df['Nom de l\'établissement'].iloc[0]
-        kendall_mat = pd.DataFrame(index=cat_var, columns=cat_var)
-
-        for var1 in cat_var:
-            for var2 in cat_var:
-                tau, _ = kendalltau(df[var1], df[var2])
-                kendall_mat.loc[var1, var2] = tau
-
-        sns.heatmap(kendall_mat.astype(float), annot=True, fmt=".2f", cmap='YlGnBu', ax=axes[i])
-        axes[i].set_title("{}".format(institution_name))
-        axes[i].set_xlabel("")
-        axes[i].set_ylabel("")
-
-    plt.suptitle("Matrice de corrélation de Kendall", y=1.02, fontweight='bold')
-    plt.tight_layout()
-    plt.show()
-
-# Utilisation
-kendall_matrix_subplot([data, data2], cat_var)"""
-
-# Test de correlation Chi2
-"""def chi2_matrix_subplot(data, cat_var):
-    n_dataframes = len(data)
-    fig, axes = plt.subplots(n_dataframes, 1, figsize=(10, 8 * n_dataframes))  # Modifier ici pour agrandir la figure et afficher les graphiques en colonne
-    fig.subplots_adjust(hspace=0.5)  # Ajouter de l'espace entre les subplots
-
-    if n_dataframes == 1:
-        axes = [axes]  # Pour gérer le cas où il n'y a qu'un seul dataframe
-
-    for i, df in enumerate(data):
-        institution_name = df['Nom de l\'établissement'].iloc[0]
-        chi2_mat = pd.DataFrame(index=cat_var, columns=cat_var)
-
-        for var1 in cat_var:
-            for var2 in cat_var:
-                contingency_table = pd.crosstab(df[var1], df[var2])
-                chi2, _, _, _ = chi2_contingency(contingency_table)
-                chi2_mat.loc[var1, var2] = round(chi2, 2)  # arrondir à deux décimales
-
-        sns.heatmap(chi2_mat.astype(float), annot=True, fmt=".2f", cmap='YlGnBu', ax=axes[i])
-        axes[i].set_title("{}".format(institution_name))
-        axes[i].set_xlabel("")
-        axes[i].set_ylabel("")
-
-    plt.suptitle("Matrice de khi-deux", y=1.02, fontweight='bold')
-    plt.tight_layout()
-    plt.show()
-
-# Exemple d'utilisation avec data et data2
-chi2_matrix_subplot([data, data2], cat_var)
-def chi2_matrix_subplot(data, cat_var):
-    n_dataframes = len(data)
-    fig, axes = plt.subplots(n_dataframes, 1, figsize=(10, 8 * n_dataframes))  # Modifier ici pour agrandir la figure et afficher les graphiques en colonne
-    fig.subplots_adjust(hspace=0.5)  # Ajouter de l'espace entre les subplots
-
-    if n_dataframes == 1:
-        axes = [axes]  # Pour gérer le cas où il n'y a qu'un seul dataframe
-
-    for i, df in enumerate(data):
-        institution_name = df['Nom de l\'établissement'].iloc[0]
-        chi2_mat = pd.DataFrame(index=cat_var, columns=cat_var)
-
-        for var1 in cat_var:
-            for var2 in cat_var:
-                contingency_table = pd.crosstab(df[var1], df[var2])
-                chi2, _, _, _ = chi2_contingency(contingency_table)
-                chi2_mat.loc[var1, var2] = int(round(chi2))  # arrondir à zéro décimale et convertir en entier
-
-        ax = axes[i]
-        sns.heatmap(chi2_mat.astype(int), annot=True, fmt="d", cmap='YlGnBu', ax=ax, annot_kws={"size": 8})  # diminuer la taille des annotations
-        ax.set_title("{}".format(institution_name))
-        ax.set_xlabel("")
-        ax.set_ylabel("")
-
-        # Afficher les noms des variables en deux lignes à l'aide de textwrap si nécessaire
-        ax.set_xticklabels([textwrap.fill(label.get_text(), 10) for label in ax.get_xticklabels()], fontsize=8)
-        ax.set_yticklabels([textwrap.fill(label.get_text(), 10) for label in ax.get_yticklabels()], fontsize=8)
-
-    plt.suptitle("Matrice de khi-deux", y=1.02, fontweight='bold')
-    plt.tight_layout()
-    plt.show()
-
-# Exemple d'utilisation avec data et data2*
-chi2_matrix_subplot([data, data2], cat_var)"""
-
 # Croisement variables catégorielles
 def plot_categoricals(data1, data2, cat_var):
     # Création d'un set pour stocker les paires de variables déjà tracées
@@ -621,7 +457,6 @@ def plot_categoricals(data1, data2, cat_var):
 # Utilisation 
 plot_categoricals(data, data2, cat_var)
 
-
 # Médiane par variable
 no_filter = ["Année","Type de source","Type d'accès"]
 import matplotlib.pyplot as plt
@@ -660,37 +495,6 @@ def plot_median_citations(dataframes, cat_var, no_filter):
 
 # Utilisation
 plot_median_citations([data, data2], cat_var, no_filter)
-
-"""
-def plot_median_citations(dataframes, cat_var, no_filter):
-    for var in cat_var:
-        fig, axs = plt.subplots(len(dataframes), figsize=(10, 6*len(dataframes)))
-        fig.suptitle(f'Médiane de citations par "{var}"', fontsize=14, weight='bold')
-        for i, df in enumerate(dataframes):
-            institution_name = df['Nom de l\'établissement'].unique()[0]
-            median_citations = df.groupby(var)['Citations'].median().reset_index()
-            # Filtrer les 10 meilleures modalités si la variable n'est pas dans no_filter
-            if var not in no_filter:
-                median_citations = median_citations.sort_values('Citations', ascending=False).head(10)
-            else:
-                median_citations = median_citations.sort_values('Citations', ascending=False)
-            barplot = sns.barplot(data=median_citations, x=var, y='Citations', order=median_citations[var], ax=axs[i])
-            axs[i].set_xticklabels(['\n'.join(textwrap.wrap(label.get_text(), 20)) for label in axs[i].get_xticklabels()], rotation=90, ha='right')
-            axs[i].set_title(f'Pour {institution_name}', fontsize=12)
-            y_max = median_citations['Citations'].max()
-            axs[i].set_ylim(0, y_max + 0.1 * y_max)
-            for p in barplot.patches:
-                barplot.annotate(format(p.get_height(), '.2f'), 
-                                 (p.get_x() + p.get_width() / 2., p.get_height()), 
-                                 ha='center', va='center', 
-                                 xytext=(0, 10), textcoords='offset points')
-            axs[i].set(xlabel=None, ylabel=None)  # Enlever le label de l'axe x et y
-        axs[0].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-        plt.tight_layout()
-        plt.show()
-
-# Utilisation
-plot_median_citations([data, data2], cat_var, no_filter)"""
 
 # Moyenne par variable
 def plot_mean_citations(dataframes, cat_var, no_filter):
@@ -791,37 +595,6 @@ def plot_mean_citations(dataframes, cat_var, no_filter):
 
 # Utilisation
 plot_mean_citations([data, data2], cat_var, no_filter)
-
-
-"""
-def plot_ratio(df_dict):
-    # Create a single plot for all dataframes
-    fig, ax = plt.subplots(figsize=(10, 6))
-    fig.suptitle("Ratio moyen des citations par année / nombre de publications par année", fontsize=16, weight='bold')
-    
-    for i, (df_name, df) in enumerate(df_dict.items()):
-        mean_citations_year = df.groupby("Année")["Citations"].mean()  # Calculer la moyenne des citations
-        count_publications_year = df.groupby("Année").size()  # Compter le nombre de publications par année
-        ratio = np.divide(mean_citations_year, count_publications_year)
-        df_ratio = pd.DataFrame({'Année': ratio.index.astype(str), 'ratio': ratio.values})  # Traiter l'année comme une chaîne de caractères
-        
-        # Plot the line for the current dataframe with a unique color
-        sns.lineplot(x='Année', y='ratio', data=df_ratio, ax=ax, label=df["Nom de l'établissement"].unique()[0])
-        
-        # Add horizontal lines
-        for y in df_ratio['ratio']:
-            ax.axhline(y=y, color='gray', linestyle='--', alpha=0.5)
-        
-        plt.xticks(rotation=90)  # Rotate x-axis labels for better readability
-
-    ax.set(xlabel="", ylabel="")
-    ax.legend(title="Établissement", bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.tight_layout()
-    plt.show()
-
-# Utilisation :
-dataframes = {"data1": data, "data2": data2}
-plot_ratio(dataframes)"""
 
 # Ratio médiane citations/nombre des publications par discipline
 
